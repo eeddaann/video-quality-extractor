@@ -1,3 +1,4 @@
 *.csv
 *.mp4
 .vscode/settings.json
+__pycache__/*

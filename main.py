@@ -5,18 +5,40 @@ from datetime import datetime
 from configparser import ConfigParser
 import linecache
 import sys
+import random
+import alerts
 
 save_csv = False
 start_time = datetime.now()
 operational_log = {
+    "log_type": "report"
 }
-metrics_log = None
 
-def send_log(log,output_url):
+def send_log(log,output_url="stdout"):
+    for name, value in config.items('metadata'): # include metadata anyway
+        log[name] = value
     if output_url == "stdout":
         print(log)
     else:
         pass
+
+def generate_report(csv_path):
+    report = alerts.extract_metrics(csv_path)
+    report['report_id'] = str(hex(hash(random.random())))
+    generate_alerts(report)
+    return report
+
+def generate_alerts(report):
+    for alert_type in alerts.ALERTS:
+        if alert_type['rule'](report):
+            alert = {
+                "log_type": "alert",
+                "relevant_report": report['report_id'],
+                "alert_code": alert_type['alert_code'],
+                "relevant_metric": alert_type['relevant_metric'],
+                "metric_value": report[alert_type['relevant_metric']]
+            }
+            send_log(alert)
 
 parser = argparse.ArgumentParser(description='Analyzes video quality and sends results in JSON format.')
 parser.add_argument('v_path',
@@ -39,8 +61,6 @@ try:
     config.read(config_path) # read configuration
     output_url = config['paths']['output_url'] # set url for sending logs 
     save_csv = config['debugging'].getboolean('save_csv') # should we need to save the csv
-    for name, value in config.items('metadata'):
-        operational_log[name] = value
     operational_log["video_size_bytes"] = os.path.getsize(video_path) # log video size
     cmd = ["/bin/sh", "-c", "ffprobe -f lavfi movie=%s,%s %s -show_frames -hide_banner -print_format csv > %s"%(video_path,
                                                                                                                 config['ffprobe']['ffprobe_command'],
@@ -62,9 +82,8 @@ try:
     operational_log["ffprobe_duration"] = (datetime.now() - ffprobe_start_time).total_seconds()
     # TODO: calc ffprobe output size
     metrics_start_time = datetime.now()
-    #metrics_log = extract_metrics(ffprobe_output)
+    operational_log.update(generate_report(ffprobe_output)) # add metrics to log
     operational_log["metrics_extraction_duration"] = (datetime.now() - metrics_start_time).total_seconds()
-    send_log(metrics_log,output_url)
     operational_log["status"] = "success"
 except Exception as e:
     exc_type, exc_obj, tb = sys.exc_info()
