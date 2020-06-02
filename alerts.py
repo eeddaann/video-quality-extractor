@@ -25,8 +25,10 @@ ALERTS = [
 def extract_metrics(csv_path):
     columns = ['ymin', 'ylow', 'yavg', 'yhigh', 'ymax', 'umin', 'ulow', 'uavg', 'uhigh', 'umax', 'vmin', 'vlow', 'vavg', 'vhigh', 'vmax', 'satmin', 'satlow', 'satavg', 'sathigh', 'satmax', 'huemed', 'hueavg', 'ydif', 'udif', 'vdif', 'ybitdepth', 'ubitdepth', 'vbitdepth', 'tout', 'vrep', 'brng', 'luminance', 'new_luminance', 'relative_change', 'bitplanenoise01', 'bitplanenoise11', 'bitplanenoise21']
     df = pd.read_csv(csv_path,names=columns)
-    print(df.head())
     return {
-        'avg_Yhigh': 60,
-        'avg_Ylow': 60
+        'avg_Yhigh': df.yhigh.mean(),
+        'avg_Ylow': df.ylow.mean(),
+        'yrang': (df.yhigh-df.ylow).mean(),
+        'urang': (df.uhigh-df.ulow).mean(),
+        'vrang': (df.vhigh-df.vlow).mean()
     }
