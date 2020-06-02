@@ -17,3 +17,9 @@ wget -q https://www.johnvansickle.com/ffmpeg/old-releases/ffmpeg-4.2.1-amd64-sta
 ```
 
 - **python** - tested on python 3.7, installtion via anaconda is recommended. (requirements.txt file will be added)
+
+## files
+- **main.py** - Contains the logic to warp ffprobe and triggers reporting. Responsible for exception handling and for shipping the reports/alerts. This script intended to be stable and generic enought to handle varity of configurations.
+
+- **config.ini** - Contains parameters that may change from **one host to another**.
+- **alerts.py** - Contains constants and logic to handle different configurations for ffprobe. It also contains the definition of the alerts. This script may change from version to version in the early stages of the deployment.
