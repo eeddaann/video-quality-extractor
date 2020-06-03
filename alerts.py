@@ -5,25 +5,59 @@ ffprobe_command = "signalstats=stat=tout+vrep+brng,bitplanenoise,idet=half_life=
 drop_meta = "| cut -f30- -d ','"
 
 def check_low_signal(report):
-    return report['avg_Yhigh'] < 70
+    # ntsc standard
+    return report['avg_Ylow'] < 16
 
 def check_high_signal(report):
-    return report['avg_Ylow'] < 70
+    # ntsc standard
+    return report['avg_Yhigh'] > 235
 
 def check_interlace(report):
     return report['interlace_pct'] > 0.75
+
+def check_noise(report):
+    # bitplane noise
+    return report['avg_noise'] > 0.85
+
+def check_high_saturation(report):
+    # outside broadcast range
+    return report['sathigh'] > 118
+
+def check_tout(report):
+    # temporal outliers
+    return report['tout'] > 0.009
 
 ALERTS = [
     {
         "rule": check_low_signal,
         "alert_code": "low_signal",
-        "relevant_metric": "avg_Yhigh"
+        "relevant_metric": "avg_Ylow"
     },
     {
         "rule": check_high_signal,
         "alert_code": "high_signal",
-        "relevant_metric": "avg_Ylow"
+        "relevant_metric": "avg_Yhigh"
     },
+    {
+        "rule": check_noise,
+        "alert_code": "noise",
+        "relevant_metric": "avg_noise"
+    },
+    {
+        "rule": check_high_saturation,
+        "alert_code": "high_saturation",
+        "relevant_metric": "sathigh"
+    },
+    {
+        "rule": check_tout,
+        "alert_code": "high_tout",
+        "relevant_metric": "tout"
+    },
+    {
+        "rule": check_interlace,
+        "alert_code": "interlace",
+        "relevant_metric": "interlace_pct"
+    }
 ]
 
 def extract_metrics(csv_path):
@@ -33,8 +67,12 @@ def extract_metrics(csv_path):
     return {
         'avg_Yhigh': round(df.yhigh.mean(),4),
         'avg_Ylow': round(df.ylow.mean(),4),
+        'yavg': round(df.yavg.mean(),4),
         'yrang': round((df.yhigh-df.ylow).mean(),4),
-        'urang': round((df.uhigh-df.ulow).mean(),4),
-        'vrang': round((df.vhigh-df.vlow).mean(),4),
+        'sathigh': round(df.sathigh.mean(),4),
+        'tout': round(df.tout.mean(),4),
+        #'urang': round((df.uhigh-df.ulow).mean(),4),
+        #'vrang': round((df.vhigh-df.vlow).mean(),4),
+        'avg_noise': round(df.bitplanenoise01.mean(),4),
         'interlace_pct': round((df.idet_multiple_bff.sum() + df.idet_multiple_tff.sum())/(2*len(df)),4)
     }
