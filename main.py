@@ -62,7 +62,7 @@ try:
     output_url = config['paths']['output_url'] # set url for sending logs 
     save_csv = config['debugging'].getboolean('save_csv') # should we need to save the csv
     operational_log["video_size_bytes"] = os.path.getsize(video_path) # log video size
-    cmd = ["/bin/sh", "-c", "ffprobe -f lavfi movie=%s,%s %s -show_frames -hide_banner -print_format csv %s > %s"%(video_path,
+    cmd = ["/bin/sh", "-c", '''ffprobe -f lavfi -i "movie=%s,%s" %s -show_frames -hide_banner -print_format csv %s > %s'''%(video_path,
                                                                                                                 alerts.ffprobe_command,
                                                                                                                 config['ffprobe']['interval'],
                                                                                                                 alerts.drop_meta,
