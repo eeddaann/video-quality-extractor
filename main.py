@@ -13,7 +13,26 @@ start_time = datetime.now()
 operational_log = {
     "log_type": "report"
 }
+'''
+import socket
+def send_log_tcp(log):
+    # WARNING: experimental code
+    try:
+        addr = output_url.split(":") # decompose host and port
+        addr[1] = int(addr[1])
+        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    except socket.error as msg:
+        sys.stderr.write("[ERROR] %s\n" % msg[1])
+        output_url="stdout"
 
+    try:
+        sock.connect((HOST, PORT))
+        sock.send(str(json.dumps(log) ).encode('utf-8') )
+    except socket.error as msg:
+        sys.stderr.write("[ERROR] %s\n" % msg[1])
+    finally:
+        sock.close()
+'''
 def send_log(log,output_url="stdout"):
     for name, value in config.items('metadata'): # include metadata anyway
         log[name] = value
