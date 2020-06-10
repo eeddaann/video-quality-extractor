@@ -6,6 +6,7 @@ from configparser import ConfigParser
 import linecache
 import sys
 import random
+import json
 import alerts
 
 save_csv = False
@@ -37,7 +38,7 @@ def send_log(log,output_url="stdout"):
     for name, value in config.items('metadata'): # include metadata anyway
         log[name] = value
     if output_url == "stdout":
-        print(log)
+        print(json.dumps(log))
     else:
         pass
 
